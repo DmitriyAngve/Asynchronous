@@ -159,7 +159,7 @@ getCountryAndNeighbour('portugal');
 
 const renderCountry = function (data, className = '') {
   //COUNTRY PROPERTIES
-  const flag = data.flags.svg;
+  const flag = data.flags.png;
   const countryName = data.name.common;
   const region = data.region;
   const population = (data.population / 1000000).toFixed(2);
@@ -233,3 +233,48 @@ setTimeout(() => {
   }, 1000);
 }, 1000);
 */
+
+////////////////////////////////////////////////////////////////////////
+///////////////////////Promises and the Fetch API///////////////////////
+////////////////////////////////////////////////////////////////////////
+
+// const getCountryData = function (country) {
+//   fetch(`https://restcountries.com/v3.1/name/${country}`)
+//     .then(function (response) {
+//       console.log(response);
+//       return response.json(); // the json() method here is a method that is available on all the response objects that is coming from the fetch function. Json() - async function, and it returns new promise
+//     })
+//     .then(function (data) {
+//       console.log(data);
+//       renderCountry(data[0]);
+//     });
+// };
+
+//  Simplified version
+// const getCountryData = function (country) {
+//   fetch(`https://restcountries.com/v3.1/name/${country}`)
+//     .then(response => response.json())
+//     .then(data => renderCountry(data[0]));
+// };
+// getCountryData('italy'); // We get object "Response" for read data from the body we need to call json method on the response
+
+////////////////////////////////////////////////////////////////////////
+////////////////////////////Chaining Promises///////////////////////////
+////////////////////////////////////////////////////////////////////////
+
+const getCountryData = function (country) {
+  fetch(`https://restcountries.com/v3.1/name/${country}`)
+    .then(responce => responce.json())
+    .then(data => {
+      renderCountry(data[0]);
+      console.log(data);
+      const neighbour = data[0].borders;
+      if (!neighbour) return;
+      return neighbour.forEach(code => {
+        fetch(`https://restcountries.com/v3.1/alpha?codes=${code}`)
+          .then(responce => responce.json())
+          .then(data => renderCountry(data[0], 'neighbour'));
+      });
+    });
+};
+getCountryData('portugal');
