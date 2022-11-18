@@ -1,5 +1,5 @@
 'use strict';
-/*
+
 const btn = document.querySelector('.btn-country');
 const countriesContainer = document.querySelector('.countries');
 
@@ -25,9 +25,9 @@ const renderCountry = function (data, className = '') {
   </article>
   `;
   countriesContainer.insertAdjacentHTML('beforeend', html);
-  // countriesContainer.style.opacity = 1;
+  countriesContainer.style.opacity = 1;
 };
-*/
+
 const renderError = function (msg) {
   countriesContainer.insertAdjacentText('beforeend', msg);
   // countriesContainer.style.opacity = 1;
@@ -444,25 +444,166 @@ getCountryData('australia');
 ////////////////////////////////////////////////////////////////////////
 /////////////////////////////CODING CHALLEGE#1//////////////////////////
 ////////////////////////////////////////////////////////////////////////
+
+// const whereAmI = function (lat, lng) {
+//   fetch(`https://geocode.xyz/${lat},${lng}?geoit=json`)
+//     .then(res => {
+//       if (!res.ok) throw new Error(`Problem with geocoding ${res.status}`);
+//       return res.json();
+//     })
+//     .then(data => {
+//       console.log(data);
+//       console.log(`You are in ${data.city}, ${data.country}`);
+
+//       return fetch(`https://restcountries.com/v3.1/name/${data.country}`);
+//     })
+
+//     .then(data => {
+//       renderCountry(data[0]);
+//     })
+//     .catch(err => {
+//       console.error(`${err.message} 💥💥💥`);
+//     });
+// };
+
+// whereAmI(52.508, 13.381);
+// whereAmI(19.037, 72.873);
+// whereAmI(-33.933, 18.474);
 /*
-  .catch(err => {
-//       console.error(`${err} 💥💥💥`);
-//       renderError(`Something went wrong 💥💥 ${err.message}. Try again!`);
-*/
 const whereAmI = function (lat, lng) {
-  fetch(`https://geocode.xyz/${lat},${lng}?geoit=json`)
-    .then(response => {
-      if (!response.ok)
-        throw new Error(`Problem with geocoding ${response.status}`);
-      return response.json();
+  fetch(
+    `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`
+  )
+    .then(res => {
+      console.log(res); // Response.ok: true
+      if (!res.ok)
+        throw new Error(`Problem with geolacation API ${res.status}`);
+      return res.json();
     })
     .then(data => {
       console.log(data);
-      console.log(`You are in ${data.city}, ${data.country}`);
+      console.log(`You are in ${data.countryName}, ${data.city}`);
+
+      return fetch(`https://restcountries.com/v3.1/name/${data.countryName}`);
+    })
+    .then(res => {
+      if (!res.ok) throw new Error(`Country not found (${res.status})`);
+      return res.json();
+    })
+    .then(data => {
+      console.log(data);
+      renderCountry(data[0]);
+    })
+    .catch(err => {
+      console.error(`${err.message}💥💥💥`);
     });
-  // .catch(err => {
-  //   console.error(`${err} 💥💥💥`);
-  // })
 };
 
 whereAmI(52.508, 13.381);
+whereAmI(19.037, 72.873);
+whereAmI(-33.933, 18.474);
+*/
+
+////////////////////////////////////////////////////////////////////////
+///////////////////////The Event Loop in Practice///////////////////////
+////////////////////////////////////////////////////////////////////////
+/*
+console.log('Test start'); // 1 (Outside of any callback)
+setTimeout(() => console.log('0 sec timer'), 0); // 4
+// Create a Promise, who immediately
+Promise.resolve('Resolve promise 1').then(res => console.log(res)); // 3
+console.log('Test end'); //2 (Second synchronous console.log)
+*/
+/*
+console.log('Test start');
+setTimeout(() => console.log('0 sec timer'), 0);
+
+Promise.resolve('Resolve promise 1').then(res => console.log(res));
+
+Promise.resolve('Resolve promise 2').then(res => {
+  for (let i = 0; i < 2000000000; i++) {}
+  console.log(res);
+});
+
+console.log('Test end');
+// Test start
+//  Resolve promise 1
+//  Resolve promise 2
+//  0 sec timer
+*/
+////////////////////////////////////////////////////////////////////////
+///////////////////////Building a Simple Promise////////////////////////
+////////////////////////////////////////////////////////////////////////
+
+// Promise constructor (Promises - special kind of object in JavaScript)
+// Promise have only one argument - executor function
+/*
+const lotteryPromise = new Promise(function (resolve, reject) {
+  if (Math.random() >= 0.5) {
+    resolve('You WIN 🎂');
+  } else {
+    reject('You LOST your money 💩');
+  }
+});
+// Promise object always need .then() method (if above condition is met, then execute first console.log(resolve), if not - then execute second console.log(reject))
+lotteryPromise.then(res => console.log(res)).catch(err => console.error(err));
+*/
+
+// Let's simulate this lottery draw by adding a simple timer, this timer will simulate the time data is passed between buying the lottery ticket
+const lotteryPromise = new Promise(function (resolve, reject) {
+  console.log('Lottery draw is happening 🔮');
+  setTimeout(function () {
+    if (Math.random() >= 0.5) {
+      resolve('You WIN 🎂');
+    } else {
+      reject(new Error('You LOST your money 💩'));
+    }
+  }, 2000);
+});
+
+lotteryPromise.then(res => console.log(res)).catch(err => console.error(err));
+
+// Promisifying means to convert callback based asynchronous behavior to promise based
+
+//Let's promisfying the setTimeout function and create a wait function
+// Real-world example
+const wait = function (seconds) {
+  // No need specified reject parameter, because impossible for the timer to fail
+  return new Promise(function (resolve) {
+    setTimeout(resolve, seconds * 1000);
+  });
+};
+
+// consume that Promise
+wait(1)
+  .then(() => {
+    console.log('1 seconds passed');
+    return wait(1);
+  })
+  .then(() => {
+    console.log('2 seconds passed');
+    return wait(1);
+  })
+  .then(() => {
+    console.log('3 seconds passed');
+    return wait(1);
+  })
+  .then(() => console.log('4 seconds passed'));
+// In the result of the first fetch, we would create a new fetch and return it
+
+// setTimeout(() => {
+//   console.log('1 second passed');
+//   setTimeout(() => {
+//     console.log('2 seconds passed');
+//     setTimeout(() => {
+//       console.log('3 seconds passed');
+//       setTimeout(() => {
+//         console.log('4 seconds passed');
+//       }, 1000);
+//     }, 1000);
+//   }, 1000);
+// }, 1000);
+
+// resolve is a static method on a promise constructor
+Promise.resolve('abc').then(x => console.log(x));
+Promise.reject(new Error('Problem!!!')).catch(x => console.error(x));
