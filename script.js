@@ -156,6 +156,7 @@ const getCountryAndNeighbour = function (country) {
 };
 getCountryAndNeighbour('portugal');
 */
+
 const renderCountry = function (data, className = '') {
   //COUNTRY PROPERTIES
   const flag = data.flags.svg;
@@ -180,7 +181,7 @@ const renderCountry = function (data, className = '') {
   countriesContainer.insertAdjacentHTML('beforeend', html);
   countriesContainer.style.opacity = 1;
 };
-
+/*
 const getCountryAndNeighbour = function (country) {
   //ajax call 1 for main country:
   const request = new XMLHttpRequest();
@@ -218,3 +219,17 @@ const getCountryAndNeighbour = function (country) {
 };
 
 getCountryAndNeighbour('usa');
+
+setTimeout(() => {
+  console.log('1 second passed');
+  setTimeout(() => {
+    console.log('2 seconds passed');
+    setTimeout(() => {
+      console.log('3 seconds passed');
+      setTimeout(() => {
+        console.log('4 seconds passed');
+      }, 1000);
+    }, 1000);
+  }, 1000);
+}, 1000);
+*/
