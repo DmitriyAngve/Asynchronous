@@ -653,9 +653,17 @@ const whereAmI = function () {
 
 btn.addEventListener('click', whereAmI);
 */
+
 ////////////////////////////////////////////////////////////////////////
 /////////////////////////////CODING CHALLEGE#2//////////////////////////
 ////////////////////////////////////////////////////////////////////////
+/*
+
+const wait = function (sec) {
+  return new Promise(function (resolve) {
+    setTimeout(resolve, sec * 1000);
+  });
+};
 
 const imgContainer = document.querySelector('.images');
 
@@ -664,9 +672,48 @@ const createImage = function (imgPath) {
     const img = document.createElement('img');
     img.src = imgPath;
 
+    // Resolve
     img.addEventListener('load', function () {
-      imgContainer.append(img); // append - добавить
+      imgContainer.append(img);
+      resolve(img);
+    });
+
+    // Reject
+    img.addEventListener('error', function () {
+      reject(new Error('Image not found!'));
     });
   });
 };
-createImage();
+
+let currentImg;
+createImage('img/img-1.jpg')
+  .then(img => {
+    currentImg = img;
+    console.log('Image 1 loaded');
+    return wait(2);
+  })
+  .then(() => {
+    currentImg.style.display = 'none';
+    return createImage('img/img-2.jpg');
+  })
+  .then(img => {
+    currentImg = img;
+    console.log('Image 2 loaded');
+    return wait(2);
+  })
+  .then(() => {
+    currentImg.style.display = 'none';
+    console.log('Image 3 loaded');
+    return createImage('img/img-3.jpg');
+  })
+  .then(() => {
+    currentImg.style.display = 'none';
+  })
+  .catch(err => console.error(err));
+*/
+
+////////////////////////////////////////////////////////////////////////
+/////////////////Consuming Promises with Async/Await////////////////////
+////////////////////////////////////////////////////////////////////////
+
+// Create async function
