@@ -715,5 +715,145 @@ createImage('img/img-1.jpg')
 ////////////////////////////////////////////////////////////////////////
 /////////////////Consuming Promises with Async/Await////////////////////
 ////////////////////////////////////////////////////////////////////////
+/*
+const getPosition = function () {
+  return new Promise(function (resolve, reject) {
+    navigator.geolocation.getCurrentPosition(resolve, reject);
+  });
+};
 
-// Create async function
+// Create async function - this function that keep running in the background while performing the code that inside of it, then this function is done, it automatically returns a promise
+// "await - will stop the code execution at this point of the function until the promise is fulfilled (untill the data has been fetch in this case)"
+// Looks like normal synchronous code where where we assign values to a variable
+const whereAmI = async function (country) {
+  // Geolocation
+  const pos = await getPosition();
+  const { latitude: lat, longitude: lng } = pos.coords;
+  // Reverse geocoding
+  const resGeo = await fetch(
+    `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`
+  );
+  const dataGeo = await resGeo.json();
+  console.log(dataGeo);
+
+  // Country data
+  const res = await fetch(
+    `https://restcountries.com/v3.1/name/${dataGeo.countryName}`
+  );
+  const data = await res.json(); // json out of the response
+  console.log(data);
+  renderCountry(data[0]);
+  
+  // // New async await
+  // const res = await fetch(`https://restcountries.com/v3.1/name/${country}`);
+  // console.log(res);
+
+  // Old way (same as above, but not clear)
+  // fetch(`https://restcountries.com/v3.1/name/${country}`).then(res =>
+  //   console.log(res)
+  // );
+
+};
+// this function running asynchronously in the background
+
+whereAmI();
+console.log('FIRST');
+*/
+////////////////////////////////////////////////////////////////////////
+/////////////////Error Handling With try...catch////////////////////////
+////////////////////////////////////////////////////////////////////////
+/*
+// Useful example
+const getPosition = function () {
+  return new Promise(function (resolve, reject) {
+    navigator.geolocation.getCurrentPosition(resolve, reject);
+  });
+};
+
+const whereAmI = async function (country) {
+  try {
+    // Geolocation
+    const pos = await getPosition();
+    const { latitude: lat, longitude: lng } = pos.coords;
+    // Reverse geocoding
+    const resGeo = await fetch(
+      `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`
+    );
+    if (!resGeo.ok) throw new Error('Problem getting location data');
+    const dataGeo = await resGeo.json();
+    console.log(dataGeo);
+
+    // Country data
+    const res = await fetch(
+      `https://restcountries.com/v3.1/name/${dataGeo.countryName}`
+    );
+    if (!res.ok) throw new Error('Problem getting country');
+    const data = await res.json();
+    console.log(data);
+    renderCountry(data[0]);
+  } catch (err) {
+    console.error(`${err} 💥💥💥`);
+    renderError(`💥💥💥 ${err.message}`);
+  }
+};
+whereAmI();
+
+console.log('FIRST');
+
+// Stupid example
+// JavaScript try to execute all code in block
+// try {
+//   let y = 1;
+//   const x = 2;
+//   x = 3;
+// } catch (err) {
+//   alert(err.message); // access to catch erro from the block "try", and prevent code death
+// }
+*/
+////////////////////////////////////////////////////////////////////////
+//////////////Returning Values from Async Functions/////////////////////
+////////////////////////////////////////////////////////////////////////
+const getPosition = function () {
+  return new Promise(function (resolve, reject) {
+    navigator.geolocation.getCurrentPosition(resolve, reject);
+  });
+};
+
+const whereAmI = async function (country) {
+  try {
+    // Geolocation
+    const pos = await getPosition();
+    const { latitude: lat, longitude: lng } = pos.coords;
+    // Reverse geocoding
+    const resGeo = await fetch(
+      `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`
+    );
+    if (!resGeo.ok) throw new Error('Problem getting location data');
+    const dataGeo = await resGeo.json();
+    console.log(dataGeo);
+
+    // Country data
+    const res = await fetch(
+      `https://restcountries.com/v3.1/name/${dataGeo.countryNamedd}`
+    );
+    if (!res.ok) throw new Error('Problem getting country');
+    const data = await res.json();
+    renderCountry(data[0]);
+
+    return `You are in ${dataGeo.locality}, ${dataGeo.countryName}`;
+  } catch (err) {
+    console.error(`${err} 💥💥💥`);
+    renderError(`💥💥💥 ${err.message}`);
+  }
+};
+console.log('1: Will get location');
+
+// const city = whereAmI(); // Value from return of this function is a promise (JS has no way of knowing what will be return from this function)
+// console.log(city); // Promise {<pending>}
+
+whereAmI()
+  .then(city => console.log(`2: ${city}`))
+  .catch(err => console.error(`2: 💥💥💥 ${err.message}`)); // Work because in the den handler "city" that will be passed into the callback function
+// You are in Issyk-Kul Region, Kyrgyzstan
+
+console.log('3: Finished getting location');
