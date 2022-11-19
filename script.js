@@ -587,7 +587,7 @@ Promise.reject(new Error('Problem!!!')).catch(x => console.error(x));
 ////////////////////////////////////////////////////////////////////////
 //////////////////Promisifying the Geolocation API//////////////////////
 ////////////////////////////////////////////////////////////////////////
-
+/*
 // This function accepts two callback, first for the success, and second for error
 // navigator.geolocation.getCurrentPosition(
 //   position => console.log(position),
@@ -651,33 +651,22 @@ const whereAmI = function () {
     });
 };
 
-/*
-const whereAmI = function () {
-  getPosition()
-    .then(pos => {
-      // Destruct object
-      const { lat = latitude, lng = longitude } = pos.coords;
-
-      fetch(`https://geocode.xyz/${lat},${lng}?geoit=json`);
-    })
-
-    .then(res => {
-      if (!res.ok) throw new Error(`Problem with geocoding ${res.status}`);
-      return res.json();
-    })
-    .then(data => {
-      console.log(data);
-      console.log(`You are in ${data.city}, ${data.country}`);
-
-      return fetch(`https://restcountries.com/v3.1/name/${data.country}`);
-    })
-
-    .then(data => {
-      renderCountry(data[0]);
-    })
-    .catch(err => {
-      console.error(`${err.message} 💥💥💥`);
-    });
-};
-*/
 btn.addEventListener('click', whereAmI);
+*/
+////////////////////////////////////////////////////////////////////////
+/////////////////////////////CODING CHALLEGE#2//////////////////////////
+////////////////////////////////////////////////////////////////////////
+
+const imgContainer = document.querySelector('.images');
+
+const createImage = function (imgPath) {
+  return new Promise(function (resolve, reject) {
+    const img = document.createElement('img');
+    img.src = imgPath;
+
+    img.addEventListener('load', function () {
+      imgContainer.append(img); // append - добавить
+    });
+  });
+};
+createImage();
