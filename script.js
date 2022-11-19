@@ -444,31 +444,6 @@ getCountryData('australia');
 ////////////////////////////////////////////////////////////////////////
 /////////////////////////////CODING CHALLEGE#1//////////////////////////
 ////////////////////////////////////////////////////////////////////////
-
-// const whereAmI = function (lat, lng) {
-//   fetch(`https://geocode.xyz/${lat},${lng}?geoit=json`)
-//     .then(res => {
-//       if (!res.ok) throw new Error(`Problem with geocoding ${res.status}`);
-//       return res.json();
-//     })
-//     .then(data => {
-//       console.log(data);
-//       console.log(`You are in ${data.city}, ${data.country}`);
-
-//       return fetch(`https://restcountries.com/v3.1/name/${data.country}`);
-//     })
-
-//     .then(data => {
-//       renderCountry(data[0]);
-//     })
-//     .catch(err => {
-//       console.error(`${err.message} 💥💥💥`);
-//     });
-// };
-
-// whereAmI(52.508, 13.381);
-// whereAmI(19.037, 72.873);
-// whereAmI(-33.933, 18.474);
 /*
 const whereAmI = function (lat, lng) {
   fetch(
@@ -531,6 +506,7 @@ console.log('Test end');
 //  Resolve promise 2
 //  0 sec timer
 */
+
 ////////////////////////////////////////////////////////////////////////
 ///////////////////////Building a Simple Promise////////////////////////
 ////////////////////////////////////////////////////////////////////////
@@ -548,7 +524,7 @@ const lotteryPromise = new Promise(function (resolve, reject) {
 // Promise object always need .then() method (if above condition is met, then execute first console.log(resolve), if not - then execute second console.log(reject))
 lotteryPromise.then(res => console.log(res)).catch(err => console.error(err));
 */
-
+/*
 // Let's simulate this lottery draw by adding a simple timer, this timer will simulate the time data is passed between buying the lottery ticket
 const lotteryPromise = new Promise(function (resolve, reject) {
   console.log('Lottery draw is happening 🔮');
@@ -607,3 +583,101 @@ wait(1)
 // resolve is a static method on a promise constructor
 Promise.resolve('abc').then(x => console.log(x));
 Promise.reject(new Error('Problem!!!')).catch(x => console.error(x));
+*/
+////////////////////////////////////////////////////////////////////////
+//////////////////Promisifying the Geolocation API//////////////////////
+////////////////////////////////////////////////////////////////////////
+
+// This function accepts two callback, first for the success, and second for error
+// navigator.geolocation.getCurrentPosition(
+//   position => console.log(position),
+//   err => console.log(err)
+// ); // This function offloaded its work to the background to the WEB API enviroment in the browser and immediately to the next line
+// console.log('Getting position'); // Whatever this console.log is after the function mentioned above, this code is executed first
+
+// Promisify a callback based API
+const getPosition = function () {
+  return new Promise(function (resolve, reject) {
+    // navigator.geolocation.getCurrentPosition(
+    //   position => resolve(position),
+    //   err => reject(err)
+
+    // The same as code above
+    navigator.geolocation.getCurrentPosition(resolve, reject);
+  });
+};
+
+// Promise was marked as successful by the resolve function
+// getPosition().then(pos => console.log(pos)); // GeolocationPosition {coords: GeolocationCoordinates, timestamp: 1668834843709}
+// "pos => console.log(pos)" - this callback was called in the den handler, and the position was passed in here finally we logged it to the console
+
+//
+
+// I'm modifying this function (whereAmI) so we don't have to pass in any coordinates
+
+// Function that tell us where we are in the world based on the geolocation of our device
+
+const whereAmI = function () {
+  getPosition()
+    .then(pos => {
+      // Destruct object
+      const { latitude: lat, longitude: lng } = pos.coords;
+      return fetch(
+        `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`
+      );
+    })
+    .then(res => {
+      console.log(res); // Response.ok: true
+      if (!res.ok)
+        throw new Error(`Problem with geolacation API ${res.status}`);
+      return res.json();
+    })
+    .then(data => {
+      console.log(data);
+      console.log(`You are in ${data.countryName}, ${data.city}`);
+
+      return fetch(`https://restcountries.com/v3.1/name/${data.countryName}`);
+    })
+    .then(res => {
+      if (!res.ok) throw new Error(`Country not found (${res.status})`);
+      return res.json();
+    })
+    .then(data => {
+      console.log(data);
+      renderCountry(data[0]);
+    })
+    .catch(err => {
+      console.error(`${err.message}💥💥💥`);
+    });
+};
+
+/*
+const whereAmI = function () {
+  getPosition()
+    .then(pos => {
+      // Destruct object
+      const { lat = latitude, lng = longitude } = pos.coords;
+
+      fetch(`https://geocode.xyz/${lat},${lng}?geoit=json`);
+    })
+
+    .then(res => {
+      if (!res.ok) throw new Error(`Problem with geocoding ${res.status}`);
+      return res.json();
+    })
+    .then(data => {
+      console.log(data);
+      console.log(`You are in ${data.city}, ${data.country}`);
+
+      return fetch(`https://restcountries.com/v3.1/name/${data.country}`);
+    })
+
+    .then(data => {
+      renderCountry(data[0]);
+    })
+    .catch(err => {
+      console.error(`${err.message} 💥💥💥`);
+    });
+};
+*/
+btn.addEventListener('click', whereAmI);
