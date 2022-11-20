@@ -813,6 +813,7 @@ console.log('FIRST');
 ////////////////////////////////////////////////////////////////////////
 //////////////Returning Values from Async Functions/////////////////////
 ////////////////////////////////////////////////////////////////////////
+/*
 const getPosition = function () {
   return new Promise(function (resolve, reject) {
     navigator.geolocation.getCurrentPosition(resolve, reject);
@@ -830,11 +831,11 @@ const whereAmI = async function (country) {
     );
     if (!resGeo.ok) throw new Error('Problem getting location data');
     const dataGeo = await resGeo.json();
-    console.log(dataGeo);
+    // console.log(dataGeo);
 
     // Country data
     const res = await fetch(
-      `https://restcountries.com/v3.1/name/${dataGeo.countryNamedd}`
+      `https://restcountries.com/v3.1/name/${dataGeo.countryName}`
     );
     if (!res.ok) throw new Error('Problem getting country');
     const data = await res.json();
@@ -844,16 +845,197 @@ const whereAmI = async function (country) {
   } catch (err) {
     console.error(`${err} 💥💥💥`);
     renderError(`💥💥💥 ${err.message}`);
+
+    // Reject promise returned from async function
+    throw err;
   }
 };
+
 console.log('1: Will get location');
 
 // const city = whereAmI(); // Value from return of this function is a promise (JS has no way of knowing what will be return from this function)
 // console.log(city); // Promise {<pending>}
 
-whereAmI()
-  .then(city => console.log(`2: ${city}`))
-  .catch(err => console.error(`2: 💥💥💥 ${err.message}`)); // Work because in the den handler "city" that will be passed into the callback function
-// You are in Issyk-Kul Region, Kyrgyzstan
+// whereAmI()
+//   .then(city => console.log(`2: ${city}`)) // You are in Issyk-Kul Region, Kyrgyzstan
+//   .catch(err => console.error(`2: 💥💥💥 ${err.message}`)) // Work because in the den handler "city" that will be passed into the callback function
+//   .finally(() => console.log('3: Finished getting location'));
 
-console.log('3: Finished getting location');
+// With IIFE
+(async function () {
+  try {
+    const city = await whereAmI();
+    console.log(`2: ${city}`);
+  } catch (err) {
+    console.error(`2: 💥💥💥 ${err.message}`);
+  }
+  console.log('3: Finished getting location');
+})();
+*/
+
+////////////////////////////////////////////////////////////////////////
+//////////////////Running Promises in Parallel//////////////////////////
+////////////////////////////////////////////////////////////////////////
+/*
+// This function will take in there capital and it will lock the data as an array
+
+const getJSON = function (url, errorMsg = 'Something went wrong') {
+  return fetch(url).then(response => {
+    if (!response.ok) throw new Error(`${errorMsg} (${response.status})`);
+
+    return response.json();
+  });
+};
+
+const get3Countries = async function (c1, c2, c3) {
+  try {
+    // Use [data1] - for to take the first element
+    // const [data1] = await getJSON(`https://restcountries.com/v3.1/name/${c1}`);
+    // const [data2] = await getJSON(`https://restcountries.com/v3.1/name/${c2}`);
+    // const [data3] = await getJSON(`https://restcountries.com/v3.1/name/${c3}`);
+    // console.log(data1.capital, data2.capital, data3.capital);
+
+    // .all() - is a static method. Takes in an array of promises and return a new Promise which will then run all the promises in the array at the same time
+    const data = await Promise.all([
+      getJSON(`https://restcountries.com/v3.1/name/${c1}`),
+      getJSON(`https://restcountries.com/v3.1/name/${c2}`),
+      getJSON(`https://restcountries.com/v3.1/name/${c3}`),
+    ]);
+    // console.log(data);
+
+    // Let's Loop over this data and take out data that we want
+    console.log(data.map(d => d[0].capital[0]));
+  } catch (err) {
+    console.error(err);
+  }
+};
+get3Countries('portugal', 'canada', 'tanzania');
+*/
+////////////////////////////////////////////////////////////////////////
+//////////Other Promise Combinators: race, allSettled and any///////////
+////////////////////////////////////////////////////////////////////////
+/*
+const getJSON = function (url, errorMsg = 'Something went wrong') {
+  return fetch(url).then(response => {
+    if (!response.ok) throw new Error(`${errorMsg} (${response.status})`);
+
+    return response.json();
+  });
+};
+
+// Three Promise combinators: race, allSettled, any
+
+// 1. Promise.race - receives an array of promises and returns a Promise
+//First Promise wins the race (who first settle)
+(async function () {
+  const res = await Promise.race([
+    getJSON(`https://restcountries.com/v2/name/italy`),
+    getJSON(`https://restcountries.com/v2/name/egypt`),
+    getJSON(`https://restcountries.com/v2/name/mexico`),
+  ]);
+  console.log(res[0]);
+})();
+
+// Timeout function
+const timeout = function (sec) {
+  return new Promise(function (_, reject) {
+    setTimeout(function () {
+      reject(new Error('Request took too long'));
+    }, sec * 1000);
+  });
+};
+
+Promise.race([
+  getJSON(`https://restcountries.com/v2/name/tanzania`),
+  timeout(0.6), // if timeout(1) happens first, then all of this here will be rejected
+])
+  .then(res => console.log(res[0]))
+  .catch(err => console.error(err));
+
+// 2. Promise.allSettled - takes in an array of Promises and return an array of all the settled Promises (no matter if the Promises gor rejected or not)
+Promise.allSettled([
+  Promise.resolve('Success!'),
+  Promise.reject('ERROR'),
+  Promise.resolve('Another success!'),
+])
+  .then(res => console.log(res))
+  .catch(err => console.error(err));
+
+// 3. Promise.any - takes in an array of multiple Promises and this one will then return the first fulfilled Promises (unless all of them reject)
+Promise.any([
+  Promise.resolve('Success!'),
+  Promise.reject('ERROR'),
+  Promise.resolve('Another success!'),
+])
+  .then(res => console.log(res))
+  .catch(err => console.error(err));
+*/
+
+////////////////////////////////////////////////////////////////////////
+/////////////////////////////CODING CHALLEGE#3//////////////////////////
+////////////////////////////////////////////////////////////////////////
+const wait = function (sec) {
+  return new Promise(function (resolve) {
+    setTimeout(resolve, sec * 1000);
+  });
+};
+
+const imgContainer = document.querySelector('.images');
+
+const createImage = function (imgPath) {
+  return new Promise(function (resolve, reject) {
+    const img = document.createElement('img');
+    img.src = imgPath;
+
+    // Resolve
+    img.addEventListener('load', function () {
+      imgContainer.append(img);
+      resolve(img);
+    });
+
+    // Reject
+    img.addEventListener('error', function () {
+      reject(new Error('Image not found!'));
+    });
+  });
+};
+/*
+// PART 1
+const loadNPause = async function () {
+  // 1 image
+  try {
+    let img = await createImage('img/img-1.jpg');
+    console.log('Image 1 loaded');
+    await wait(2);
+    img.style.display = 'none';
+    // 2 image
+    img = await createImage('img/img-2.jpg');
+    console.log('Image 2 loaded');
+    await wait(2);
+    img.style.display = 'none';
+    // 3 image
+    img = await createImage('img/img-3.jpg');
+    console.log('Image 3 loaded');
+    await wait(2);
+    img.style.display = 'none';
+  } catch (err) {
+    err => console.error(err);
+  }
+};
+loadNPause();
+*/
+
+// PART 2
+const loadAll = async function (imgArr) {
+  try {
+    const imgs = imgArr.map(async img => await createImage(img)); // here returns array of 3 Promises
+    const imgs1 = await Promise.all(imgs); // here return array of 3 images
+    console.log(imgs1);
+    // Let's loop array and add classList
+    imgs1.forEach(img => img.classList.add('parallel'));
+  } catch {
+    err => console.error(err);
+  }
+};
+
+loadAll(['img/img-1.jpg', 'img/img-2.jpg', 'img/img-3.jpg']);
