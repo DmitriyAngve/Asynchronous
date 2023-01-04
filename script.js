@@ -38,7 +38,7 @@ const renderError = function (msg) {
 ////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////VERSION 3.1//////////////////////////
-/*
+
 // Let's reuse code to create more element like this
 const getCountryData = function (country) {
   // Old school request
@@ -79,7 +79,6 @@ const getCountryData = function (country) {
 };
 
 getCountryData('kyrgyzstan');
-*/
 
 //////////////////////////////VERSION 2.0//////////////////////////
 /*
@@ -970,7 +969,7 @@ Promise.any([
   .then(res => console.log(res))
   .catch(err => console.error(err));
 */
-
+/*
 ////////////////////////////////////////////////////////////////////////
 /////////////////////////////CODING CHALLEGE#3//////////////////////////
 ////////////////////////////////////////////////////////////////////////
@@ -1024,7 +1023,7 @@ const loadNPause = async function () {
 };
 loadNPause();
 */
-
+/*
 // PART 2
 const loadAll = async function (imgArr) {
   try {
@@ -1039,3 +1038,4 @@ const loadAll = async function (imgArr) {
 };
 
 loadAll(['img/img-1.jpg', 'img/img-2.jpg', 'img/img-3.jpg']);
+*/
